@@ -36,7 +36,6 @@ public class MainActivity extends AppCompatActivity {
     // 브러쉬는 값을 조절할때마다 그림판에 새로 생성됨
 
     static int progress;
-    int colorType;
     @Override
     protected void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
@@ -52,20 +51,21 @@ public class MainActivity extends AppCompatActivity {
             public void onCheckedChanged(RadioGroup group, @IdRes int checkedId) {
                 switch (checkedId) {
                     case R.id.rdGreen:
-                        colorType = Color.GREEN;
+                        setBrush(Color.GREEN);
                         break;
+
                     case R.id.rdBlue:
-                        colorType = Color.BLUE;
+                        setBrush(Color.BLUE);
                         break;
+
                     case R.id.rdRed:
-                        colorType = Color.RED;
+                        setBrush(Color.RED);
                         break;
                     case R.id.rdErase:
-                        colorType = Color.WHITE;
+                        setBrush(Color.WHITE);
                         break;
 
                 }
-                setBrush();
             }
         });
 
@@ -87,7 +87,7 @@ public class MainActivity extends AppCompatActivity {
 
             @Override
             public void onStopTrackingTouch(SeekBar seekBar) {
-                setBrush();
+
 
             }
         });
@@ -119,29 +119,40 @@ public class MainActivity extends AppCompatActivity {
         layout.addView(board);
 
         // 3. 기본적인 색깔을 초기에 설정해준다
-        colorType = Color.BLUE;
-        setBrush();
+        setBrush(Color.BLUE);
 
     }
 
+//    private void setBrushColor(int choiceColor){
+//        basic_brush_color = choiceColor;
+//        setBrush(Color.BLUE);
+//    }
 
 
-    private void setBrush() {
+    private void setBrush(int settingColor) {
         // 2. 붓을 만들어서 보드에 담는다
         Paint paint = new Paint();
-        paint.setColor(colorType);
+        paint.setColor(settingColor);
+
+
         // 매끄럽게 만들어준다
         paint.setStyle(Paint.Style.STROKE);
+
         // 선을 채우지 않고 굵기를 지정
         paint.setStyle(Paint.Style.STROKE);
+
         //선을 그어줄때 부드럽게 만들어주는 역활
         paint.setAntiAlias(true);
+
         // 각진곳을 라운드 처리한다
         paint.setStrokeJoin(Paint.Join.ROUND);
+
         // 각진곳을 이어주면서 처리한다
         paint.setStrokeCap(Paint.Cap.ROUND);
+
         // 옆으로 꺠진것(찌글찌글), 선의 노이즈를 보정해준다
         paint.setDither(true);
+
         // 선의 굵기
         paint.setStrokeWidth(progress);
 
@@ -151,6 +162,12 @@ public class MainActivity extends AppCompatActivity {
     }
 
 
+    private void setStroke(float settingStroke){
+        Paint paint = new Paint();
+        paint.setStrokeWidth(settingStroke);
+        // 선의 굵기
+        paint.setStrokeWidth(progress);
+    }
 
     class Brush {
         Paint paint;
