@@ -25,48 +25,56 @@ import java.util.List;
 public class MainActivity extends AppCompatActivity {
 
     FrameLayout layout;
-    RadioGroup color;
-    Board board;
-    SeekBar seekBar;
-    static int progress;
-
+    RadioGroup color; // 색상조절 옵션
+    Board board; // 그림판
+    SeekBar stroke; // 두께 조절옵션
     ImageView imageView; //캡쳐한 이미지를 썸네일로 화면에 표시
-
 
     // 캡쳐한 이미지를 저장하는 변수
     Bitmap captured = null;
 
+    // 브러쉬는 값을 조절할때마다 그림판에 새로 생성됨
+
+    static int progress;
+    int colorType;
     @Override
     protected void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
 
         setContentView(R.layout.activity_main);
+        // 그림판이 들어가있는 레이아웃
         layout = (FrameLayout) findViewById(R.id.layout);
+        // 색상 선택
         color = (RadioGroup) findViewById(R.id.color);
-        seekBar = (SeekBar) findViewById(R.id.seekBar);
-
-
-        // 썸네일 이미지 뷰
-        imageView = (ImageView) findViewById(R.id.imageView);
-
-
-        //저장버튼
-        findViewById(R.id.btnSave).setOnClickListener(new View.OnClickListener() {
+        // color의 버튼을 활성화 시킨다
+        color.setOnCheckedChangeListener(new RadioGroup.OnCheckedChangeListener() {
             @Override
-            public void onClick(View v) {
-                // 드로잉 캐쉬를 지워주고
-                layout.destroyDrawingCache();
-                // 다시 만들고
-                layout.buildDrawingCache();
-                // 레이아웃의 그려진 내용을 Bitmap 형태로 가져온다.
-                captured = layout.getDrawingCache();
-                // 캡쳐한 이미지를 썸네일에 보여준다.
-                imageView.setImageBitmap(captured);
+            public void onCheckedChanged(RadioGroup group, @IdRes int checkedId) {
+                switch (checkedId) {
+                    case R.id.rdGreen:
+                        colorType = Color.GREEN;
+                        break;
+                    case R.id.rdBlue:
+                        colorType = Color.BLUE;
+                        break;
+                    case R.id.rdRed:
+                        colorType = Color.RED;
+                        break;
+                    case R.id.rdErase:
+                        colorType = Color.WHITE;
+                        break;
 
+                }
+                setBrush();
             }
         });
 
-        seekBar.setOnSeekBarChangeListener(new SeekBar.OnSeekBarChangeListener() {
+
+        // 두께 선택
+
+        stroke = (SeekBar) findViewById(R.id.stroke);
+        stroke.setProgress(10);
+        stroke.setOnSeekBarChangeListener(new SeekBar.OnSeekBarChangeListener() {
             @Override
             public void onProgressChanged(SeekBar seekBar, int progress, boolean fromUser) {
                 MainActivity.progress = progress;
@@ -79,83 +87,70 @@ public class MainActivity extends AppCompatActivity {
 
             @Override
             public void onStopTrackingTouch(SeekBar seekBar) {
+                setBrush();
 
             }
         });
 
 
-        // color의 버튼을 활성화 시킨다
-        color.setOnCheckedChangeListener(new RadioGroup.OnCheckedChangeListener() {
+        // 썸네일 이미지 뷰
+        imageView = (ImageView) findViewById(R.id.imageView);
+        // 캡쳐할 뷰의 캐쉬를 사용한다
+        // 저장버튼
+        findViewById(R.id.btnSave).setOnClickListener(new View.OnClickListener() {
             @Override
-            public void onCheckedChanged(RadioGroup group, @IdRes int checkedId) {
-                switch (checkedId) {
-                    case R.id.rdGreen:
-                        setBrush(Color.GREEN);
-                        break;
-
-                    case R.id.rdBlue:
-                        setBrush(Color.BLUE);
-                        break;
-
-                    case R.id.rdRed:
-                        setBrush(Color.RED);
-                        break;
-
-                }
+            public void onClick(View v) {
+                // 드로잉 캐쉬를 지워주고
+                layout.destroyDrawingCache();
+                // 다시 만들고
+                layout.buildDrawingCache();
+                // 레이아웃의 그려진 내용을 Bitmap 형태로 가져온다.
+                captured = layout.getDrawingCache();
+                // 캡쳐한 이미지를 썸네일에 보여준다.
+                imageView.setImageBitmap(captured);
             }
         });
+
 
         // 1. 보드를 새로 생성한다.
         board = new Board(getBaseContext());
 
-        // 3. 생성된 보드를 FrameLayout 화면에 세팅한다.
+        // 2. 생성된 보드를 FrameLayout 화면에 세팅한다.
         layout.addView(board);
 
-        // 기본적인 색깔을 초기에 설정해준다  + 굵기 설정
-        setBrush(Color.BLUE);
-
+        // 3. 기본적인 색깔을 초기에 설정해준다
+        colorType = Color.BLUE;
+        setBrush();
 
     }
 
-    private void setBrush(int settingColor) {
+
+
+    private void setBrush() {
         // 2. 붓을 만들어서 보드에 담는다
         Paint paint = new Paint();
-        paint.setColor(settingColor);
-
-
+        paint.setColor(colorType);
         // 매끄럽게 만들어준다
         paint.setStyle(Paint.Style.STROKE);
-
         // 선을 채우지 않고 굵기를 지정
         paint.setStyle(Paint.Style.STROKE);
-
         //선을 그어줄때 부드럽게 만들어주는 역활
         paint.setAntiAlias(true);
-
         // 각진곳을 라운드 처리한다
         paint.setStrokeJoin(Paint.Join.ROUND);
-
         // 각진곳을 이어주면서 처리한다
         paint.setStrokeCap(Paint.Cap.ROUND);
-
         // 옆으로 꺠진것(찌글찌글), 선의 노이즈를 보정해준다
         paint.setDither(true);
-
         // 선의 굵기
         paint.setStrokeWidth(progress);
+
         // 보드에 paint를 지정해준다
         board.setPaint(paint);
 
     }
 
 
-
-//    private void setStroke(int progress){
-//        MainActivity.progress = progress;
-//        Paint paints = new Paint();
-//        paints.setStrokeWidth(progress);
-//
-//    }
 
     class Brush {
         Paint paint;
@@ -174,7 +169,6 @@ public class MainActivity extends AppCompatActivity {
             super(context);
 //            path = new Path(); //TODO 왜 주석처리가 되는지 , 위에서 참조를 안하기 떄문에
         }
-
 
 
         public void setPaint(Paint paint) {
@@ -206,6 +200,7 @@ public class MainActivity extends AppCompatActivity {
                     // 나. 생성한 패스와 현재 페이트를 브러쉬에 담는다
                     brush.path = current_path;
                     brush.paint = paint;
+
                     // 다. 완성된 브러쉬를 배열에 담아준다
                     brushes.add(brush);
 
